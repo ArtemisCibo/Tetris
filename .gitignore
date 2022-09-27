@@ -1,0 +1,9 @@
+Library/
+Logs/
+Temp/
+Packages/
+UserSettings/
+Publish/
+.vsconfig
+Assembly-CSharp.csproj
+Tetris.sln
