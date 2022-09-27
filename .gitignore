@@ -7,3 +7,6 @@ Publish/
 .vsconfig
 Assembly-CSharp.csproj
 Tetris.sln
+obj/Debug/Assembly-CSharp.csproj.AssemblyReference.cache
+obj/
+.vs/

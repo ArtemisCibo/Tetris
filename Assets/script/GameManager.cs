@@ -51,7 +51,14 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         instance = this;
-        scale = UnityEngine.Screen.width / 750f;
+        if ((float)UnityEngine.Screen.width / UnityEngine.Screen.height >= 750f / 1334f)
+        {
+            scale = UnityEngine.Screen.height / 1334f;
+        }
+        else
+        {
+            scale = UnityEngine.Screen.width / 750f;
+        }
         gameState = 1;
         totalTime = 0f;
     }
@@ -62,6 +69,8 @@ public class GameManager : MonoBehaviour
     }
     private void OnEnable()
     {
+
+
         sound_complete = GameObject.Find("sound_complete").GetComponent<AudioSource>();
         sound_move = GameObject.Find("sound_move").GetComponent<AudioSource>();
         sound_falled = GameObject.Find("sound_falled").GetComponent<AudioSource>();
