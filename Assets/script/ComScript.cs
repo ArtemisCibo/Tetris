@@ -143,8 +143,8 @@ public class ComScript : MonoBehaviour
         }
         for (int i = 0; i < 4; i++)
         {
-            Debug.Log("m_localX" + b[i].m_localX + "--> " + nextBX[i]);
-            Debug.Log("m_localY" + b[i].m_localY + "--> " + nextBY[i]);
+            //Debug.Log("m_localX" + b[i].m_localX + "--> " + nextBX[i]);
+            //Debug.Log("m_localY" + b[i].m_localY + "--> " + nextBY[i]);
             b[i].m_localX = nextBX[i];
             b[i].m_localY = nextBY[i];
             //b[i].UpdateGobalXY(m_x, m_y);

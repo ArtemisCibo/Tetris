@@ -7,8 +7,15 @@ public class ButtonScript : MonoBehaviour, IPointerDownHandler,IPointerUpHandler
 {
     public void OnPointerDown(PointerEventData eventData)
     {
+        switch (name)
+        {
+            case "restartBtn":
+                GameManager.instance.RestartGame();
+                break;
+        }
         if (GameManager.instance.gameState == 0) return;
-        switch (name) {
+        switch (name)
+        {
             case "moveLeft":
                 GameManager.instance.MoveLeft();
                 GameManager.instance.PlaySound("sound_move");
@@ -27,12 +34,13 @@ public class ButtonScript : MonoBehaviour, IPointerDownHandler,IPointerUpHandler
                 break;
             case "fallfaster":
                 GameManager.instance.FallFaster();
-                
+                GameManager.instance.PlaySound("sound_move");
                 break;
             case "falled":
                 GameManager.instance.Falled();
                 GameManager.instance.PlaySound("sound_falled");
                 break;
+
         }
 
     }

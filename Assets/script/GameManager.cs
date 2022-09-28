@@ -10,10 +10,10 @@ public class GameManager : MonoBehaviour
 
     private const int gameViewRow = 16;
     private const int gameViewColumn = 10;
-    public float fallIntervalTime = .6f;
     private const float blockSideLen = 75;
+    public float fallIntervalTime = .6f;
+
     private float totalTime;
-    public bool isFasterFall = false;
     public Vector3 leftUpGridPos;
     public GameObject curCom;
     private ComScript curComScript;
@@ -28,6 +28,12 @@ public class GameManager : MonoBehaviour
     private AudioSource sound_move;
     private AudioSource sound_falled;
     private AudioSource sound_ratate;
+    private AudioSource c1;
+    private AudioSource c2;
+    private AudioSource c3;
+    private AudioSource c4;
+    private GameObject gameOverPanel;
+    private GameObject comObjs;
     /*0-blank 1-curComUnit 2-build*/
     public int[,] gameViewData = new int[gameViewRow, gameViewColumn] {
         {0,0,0,0,0,0,0,0,0,0 },
@@ -59,28 +65,36 @@ public class GameManager : MonoBehaviour
         {
             scale = UnityEngine.Screen.width / 750f;
         }
-        gameState = 1;
+        
         totalTime = 0f;
     }
 
-    private void OnGUI()
-    {
-
-    }
     private void OnEnable()
     {
-
-
+        Init();
+        
+        StartGame();
+        
+    }
+    private void Init()
+    {
         sound_complete = GameObject.Find("sound_complete").GetComponent<AudioSource>();
         sound_move = GameObject.Find("sound_move").GetComponent<AudioSource>();
         sound_falled = GameObject.Find("sound_falled").GetComponent<AudioSource>();
         sound_ratate = GameObject.Find("sound_ratate").GetComponent<AudioSource>();
 
+        c1 = GameObject.Find("c1").GetComponent<AudioSource>();
+        c2 = GameObject.Find("c2").GetComponent<AudioSource>();
+        c3 = GameObject.Find("c3").GetComponent<AudioSource>();
+        c4 = GameObject.Find("c4").GetComponent<AudioSource>();
         view = GameObject.Find("view");
+        comObjs = GameObject.Find("comObjs");
+        gameOverPanel = GameObject.Find("gameOverPanel");
+        gameOverPanel.SetActive(false);
+
+        //gameOverPanel.
         view.transform.localScale = new Vector3(scale, scale, 1);
         leftUpGridPos = new Vector3(-337.5f, 829.5f, 0f);
-
-        Init();
     }
     public void PlaySound(string name)
     {
@@ -98,14 +112,56 @@ public class GameManager : MonoBehaviour
             case "sound_ratate":
                 sound_ratate.Play();
                 break;
+            case "c1":
+                c1.Play();
+                break;
+            case "c2":
+                c2.Play();
+                break;
+            case "c3":
+                c3.Play();
+                break;
+            case "c4":
+                c4.Play();
+                break;
         }
     }
-    private void Init()
+    private void StartGame()
     {
+        gameOverPanel.SetActive(false);
+        gameState = 1;
         CreateRandomCom();
     }
+    public void RestartGame()
+    {
+        RestData();
+        StartGame();
+    }
+    private void RestData()
+    {
+        gameState = 0;
+        int k = 0;
+        foreach (int i in gameViewData)
+        {
+            gameViewData[k / 10, k % 10] = 0;
+            k++;
+        }
+
+        foreach(GameObject ele in comArr)
+        {
+            Destroy(ele);
+        }
+
+        buildBlockUnitScrArr.Clear();
+        comArr.Clear();
+        Destroy(curCom);
+        Destroy(shadowObj);
+    }
+
+
     private void CreateRandomCom()
     {
+        if (gameState == 0) return;
         //(int)Mathf.Round(Random.Range(0, 6))
         GameObject go = GameObject.Find("Coms").transform.GetChild((int)Mathf.Round(Random.Range(0, 6))).gameObject;
         curCom = Instantiate(go);
@@ -113,7 +169,8 @@ public class GameManager : MonoBehaviour
        
         curComScript = curCom.GetComponent<ComScript>();
         curComScript.SwitchColor(curCom.name);
-        InitComData();
+        curCom.transform.SetParent(GameObject.Find("comObjs").transform);
+        curCom.transform.localScale = new Vector3(1, 1, 1);
         comArr.Add(curCom);
 
         CreateShadow();
@@ -131,9 +188,9 @@ public class GameManager : MonoBehaviour
             shadowObj.transform.GetChild(i).GetComponent<Image>().color = new Color(1, 1, 1, .3f);
         }
     }
-    private void UpdateGameViewData()
+    private void UpdateCurComData()
     {
-        ClearGameViewComData();
+        ClearCurComData();
         BlockUnitScript b;
         for (int i = 0; i < 4; i++)
         {
@@ -143,17 +200,46 @@ public class GameManager : MonoBehaviour
     }
 
 
-    private void InitComData()
+    //private void InitComData()
+    //{
+
+    //    //curCom.transform.localPosition = leftUpGridPos;
+
+
+
+    //}
+    private void Update()
     {
-        curCom.transform.SetParent(GameObject.Find("view").transform);
-        curCom.transform.localScale = new Vector3(1, 1, 1);
-        //curCom.transform.localPosition = leftUpGridPos;
-
-
-
+        if (gameState == 0) return;
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            GameManager.instance.MoveLeft();
+            GameManager.instance.PlaySound("sound_move");
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            GameManager.instance.MoveRight();
+            GameManager.instance.PlaySound("sound_move");
+        }
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            GameManager.instance.ClockWiseRotate();
+            GameManager.instance.PlaySound("sound_ratate");
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            GameManager.instance.FallFaster();
+            GameManager.instance.PlaySound("sound_move");
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            GameManager.instance.Falled();
+            GameManager.instance.PlaySound("sound_falled");
+        }
     }
     private void FixedUpdate()
     {
+
         if (gameState == 0) return;
         totalTime += Time.deltaTime;
         if (totalTime >= fallIntervalTime)
@@ -171,7 +257,7 @@ public class GameManager : MonoBehaviour
             totalTime = 0;
         }
 
-        UpdateGameViewData();
+        UpdateCurComData();
         UpdateCurComPos();
         CastShadow();
         //for (int i = 0; i < gameViewRow; i++)
@@ -217,7 +303,7 @@ public class GameManager : MonoBehaviour
         0
         );
     }
-    private void ClearGameViewComData()
+    private void ClearCurComData()
     {
         int k = 0;
         foreach (int i in gameViewData)
@@ -253,7 +339,7 @@ public class GameManager : MonoBehaviour
         }
 
         bool allBuild = true;
-        bool playSound = false;
+        int combo = 0;
         ArrayList removeArrList = new ArrayList();
         for (int i = 0;i < gameViewRow; i++)
         {
@@ -267,7 +353,7 @@ public class GameManager : MonoBehaviour
             }
             if (allBuild)
             {
-                playSound = true;
+                combo++;
                 removeArrList.Clear();
                 foreach(BlockUnitScript element in buildBlockUnitScrArr)
                 {
@@ -319,10 +405,25 @@ public class GameManager : MonoBehaviour
             }
         }
         bool allHide = true;
-        if (playSound)
-        {
-            PlaySound("sound_complete");
+        switch (combo) {
+            case 1:
+                PlaySound("c1");
+            break;
+            case 2:
+                PlaySound("c2");
+                break;
+            case 3:
+                PlaySound("c3");
+                break;
+            case 4:
+                PlaySound("c4");
+                break;
+
         }
+
+   
+           
+        
         foreach (GameObject curCom in comArr)
         {
             for (int i = 0; i < 4; i++)
@@ -350,7 +451,8 @@ public class GameManager : MonoBehaviour
     private void GameOver()
     {
         gameState = 0;
-        Debug.Log("GameOver");
+        gameOverPanel.SetActive(true);
+       
     }
     private bool CanFallNextGrid()
     {
@@ -416,7 +518,7 @@ public class GameManager : MonoBehaviour
         curComScript.Fall(1);
         UpdateCurComPos();
         //FreezeCurCom();
-        totalTime = 0;
+        totalTime = 0;    
     }
     public void Falled()
     {
