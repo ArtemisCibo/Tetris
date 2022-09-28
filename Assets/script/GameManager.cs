@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
+using static UnityEngine.Mesh;
 
 public class GameManager : MonoBehaviour
 {
@@ -34,6 +36,8 @@ public class GameManager : MonoBehaviour
     private AudioSource c4;
     private GameObject gameOverPanel;
     private GameObject comObjs;
+    private GameObject scoreTxt;
+    private int score;
     /*0-blank 1-curComUnit 2-build*/
     public int[,] gameViewData = new int[gameViewRow, gameViewColumn] {
         {0,0,0,0,0,0,0,0,0,0 },
@@ -89,12 +93,15 @@ public class GameManager : MonoBehaviour
         c4 = GameObject.Find("c4").GetComponent<AudioSource>();
         view = GameObject.Find("view");
         comObjs = GameObject.Find("comObjs");
+        scoreTxt = GameObject.Find("score");
+
         gameOverPanel = GameObject.Find("gameOverPanel");
         gameOverPanel.SetActive(false);
 
         //gameOverPanel.
         view.transform.localScale = new Vector3(scale, scale, 1);
         leftUpGridPos = new Vector3(-337.5f, 829.5f, 0f);
+        scoreTxt.GetComponent<Text>().text = score.ToString();
     }
     public void PlaySound(string name)
     {
@@ -128,6 +135,7 @@ public class GameManager : MonoBehaviour
     }
     private void StartGame()
     {
+       
         gameOverPanel.SetActive(false);
         gameState = 1;
         CreateRandomCom();
@@ -140,6 +148,8 @@ public class GameManager : MonoBehaviour
     private void RestData()
     {
         gameState = 0;
+        score = 0;
+        scoreTxt.GetComponent<Text>().text = score.ToString();
         int k = 0;
         foreach (int i in gameViewData)
         {
@@ -405,6 +415,8 @@ public class GameManager : MonoBehaviour
             }
         }
         bool allHide = true;
+        score += combo * 5;
+        scoreTxt.GetComponent<Text>().text = score.ToString(); 
         switch (combo) {
             case 1:
                 PlaySound("c1");
